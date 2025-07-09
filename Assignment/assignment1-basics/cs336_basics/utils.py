@@ -1,8 +1,6 @@
-# 
-# utils.py
-
 import torch
-def _to_divice_and_compile(model):
+
+def _to_device_and_compile(model):
     if torch.backends.mps.is_available():
         device = torch.device("mps")
     elif torch.cuda.is_available():
@@ -16,5 +14,5 @@ def _to_divice_and_compile(model):
         model = torch.compile(model, backend="aot_eager")
     else:
         model = torch.compile(model)
-    
+
     return model, device
