@@ -31,7 +31,7 @@ tokenizer = Tokenizer(
 )
 
 CKPT_PATH = pathlib.Path(__file__).resolve().parent.parent / "checkpoints/ckpt_iter5000.pt"
-CONFIG_PATH = "scripts/config.json"
+CONFIG_PATH = "./config.json"
 def main():
     parser = argparse.ArgumentParser(description="Text Generation Inference")
     parser.add_argument("--prompt", type=str, default="Once upon a time, there was a pretty girl", help="Input prompt for generation")
