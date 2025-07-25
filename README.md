@@ -1,7 +1,5 @@
 # [CS336: Language Modeling from Scratch Spring 2025](https://stanford-cs336.github.io/spring2025/index.html)
 
----
-
 ### Course Staff
 
 - **Tatsunori Hashimoto** — Instructor  
