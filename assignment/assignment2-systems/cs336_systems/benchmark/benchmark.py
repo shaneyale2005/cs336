@@ -5,7 +5,7 @@ from statistics import mean, stdev
 from cs336_basics.model import BasicsTransformerLM
 import argparse
 
-# Define model sizes
+# Define the model sizes (from the table)
 model_configs = [
     {"size": "small", "d_model": 768, "d_ff": 3072, "num_layers": 12, "num_heads": 12},
     {
@@ -29,6 +29,7 @@ warmup_steps = 5
 timing_steps = 10
 device = "cuda" if torch.cuda.is_available() else "cpu"
 
+
 def benchmark(model, x, y, mode):
     model.train()
     optimizer = torch.optim.Adam(model.parameters(), lr=1e-3)
@@ -37,20 +38,21 @@ def benchmark(model, x, y, mode):
     def step_forward():
         with torch.no_grad():
             _ = model(x)
-    
+
     def step_forward_backward():
         optimizer.zero_grad()
         out = model(x)
         loss = criterion(out.view(-1, vocab_size), y.view(-1))
         loss.backward()
         optimizer.step()
+
     step_fn = step_forward if mode == "forward" else step_forward_backward
 
-    # Warm up
+    # Warm-up
     for _ in range(warmup_steps):
-        step_fn
-    
-    # Times steps
+        step_fn()
+
+    # Timed steps
     times = []
     for _ in range(timing_steps):
         start = timeit.default_timer()
@@ -60,17 +62,19 @@ def benchmark(model, x, y, mode):
         times.append(end - start)
 
     return mean(times), stdev(times)
-    
+
+
 def parse_args():
-    parser = argparse.ArgumentParser(description="Benchmark Transformer models")
+    parser = argparse.ArgumentParser(description="Benchmark Transformer models.")
     parser.add_argument("--d_model", type=int, help="Model dimension")
     parser.add_argument("--d_ff", type=int, help="Feedforward dimension")
-    parser.add_argument("--num_layers", type=int, help="Number of Transformer layers")
+    parser.add_argument("--num_layers", type=int, help="Number of transformer layers")
     parser.add_argument("--num_heads", type=int, help="Number of attention heads")
     parser.add_argument("--all", action="store_true", help="Run all predefined configurations")
     parser.add_argument("--context_length", type=int, help="Sequence context length")
     parser.add_argument("--warmup_steps", type=int, help="Number of warmup steps")
-    return parser.parse_args
+    return parser.parse_args()
+
 
 def main():
     args = parse_args()
@@ -95,11 +99,11 @@ def main():
             "num_heads": args.num_heads,
         }]
     else:
-        raise ValueError("Must specify either --all or all custom model hyperparameters")
-
+        raise ValueError("Must specify either --all or all custom model hyperparameters.")
+    
     print("\nRunning the following configurations:")
     for cfg in configs_to_run:
-        print(f" - {cfg}")
+        print(f"  - {cfg}")
     print()
 
     for config in configs_to_run:
@@ -110,12 +114,13 @@ def main():
                 vocab_size=vocab_size,
                 context_length=context_length,
                 d_model=config["d_model"],
-                d_ff=config["d_ff"],
-                num_heads=config["num_heads"],
                 num_layers=config["num_layers"],
+                num_heads=config["num_heads"],
+                d_ff=config["d_ff"],
                 rope_theta=rope_theta,
             ).to(device)
 
+            # Create random input data  
             x = torch.randint(
                 0, vocab_size, (batch_size, context_length), device=device
             )
@@ -124,9 +129,11 @@ def main():
             )
 
             avg, std = benchmark(model, x, y, mode)
-            print(f" - {config["size"]} [{mode}]: Avg Time = {avg:.6f}s, Std Dev = {std:.6f}s")
-            del model, x, y
+            
+            print(f"  - {config['size']} [{mode}]: Avg Time = {avg:.6f}s, Std Dev = {std:.6f}s")
+            del model, x, y 
             torch.cuda.empty_cache()
+            
 
             results.append(
                 {
@@ -143,19 +150,15 @@ def main():
                 }
             )
 
+
+    # Output results
     df = pd.DataFrame(results)
     print(df.to_markdown(index=False))
 
+    # Save to file
     with open("benchmark_results.md", "w") as f:
-            f.write(df.to_markdown(index=False))
+        f.write(df.to_markdown(index=False))
+
 
 if __name__ == "__main__":
     main()
-
-
-
-
-
-    
-
-
