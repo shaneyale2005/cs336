@@ -73,3 +73,89 @@ def parse_args():
     return parser.parse_args
 
 def main():
+    args = parse_args()
+    global context_length
+    if args.context_length:
+        context_length = args.context_length
+    global warmup_steps
+    if args.warmup_steps:
+        warmup_steps = args.warmup_steps
+    results = []
+
+    configs_to_run = []
+
+    if args.all:
+        configs_to_run = model_configs
+    elif args.d_model and args.d_ff and args.num_layers and args.num_heads:
+        configs_to_run = [{
+            "size": "custom",
+            "d_model": args.d_model,
+            "d_ff": args.d_ff,
+            "num_layers": args.num_layers,
+            "num_heads": args.num_heads,
+        }]
+    else:
+        raise ValueError("Must specify either --all or all custom model hyperparameters")
+
+    print("\nRunning the following configurations:")
+    for cfg in configs_to_run:
+        print(f" - {cfg}")
+    print()
+
+    for config in configs_to_run:
+        for mode in ["forward", "forward_backward"]:
+            print(f"Running {config['size']} model [{mode}]...")
+
+            model = BasicsTransformerLM(
+                vocab_size=vocab_size,
+                context_length=context_length,
+                d_model=config["d_model"],
+                d_ff=config["d_ff"],
+                num_heads=config["num_heads"],
+                num_layers=config["num_layers"],
+                rope_theta=rope_theta,
+            ).to(device)
+
+            x = torch.randint(
+                0, vocab_size, (batch_size, context_length), device=device
+            )
+            y = torch.randint(
+                0, vocab_size, (batch_size, context_length), device=device
+            )
+
+            avg, std = benchmark(model, x, y, mode)
+            print(f" - {config["size"]} [{mode}]: Avg Time = {avg:.6f}s, Std Dev = {std:.6f}s")
+            del model, x, y
+            torch.cuda.empty_cache()
+
+            results.append(
+                {
+                    "Size": config["size"],
+                    "Mode": mode,
+                    "d_model": config["d_model"],
+                    "d_ff": config["d_ff"],
+                    "num_layers": config["num_layers"],
+                    "num_heads": config["num_heads"],
+                    "Context Length": context_length,
+                    "Avg Time (s)": round(avg, 6),
+                    "Std Dev (s)": round(std, 6),
+                    "Warmup Steps": warmup_steps,
+                }
+            )
+
+    df = pd.DataFrame(results)
+    print(df.to_markdown(index=False))
+
+    with open("benchmark_results.md", "w") as f:
+            f.write(df.to_markdown(index=False))
+
+if __name__ == "__main__":
+    main()
+
+
+
+
+
+    
+
+
