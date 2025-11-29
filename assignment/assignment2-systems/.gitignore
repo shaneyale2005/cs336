@@ -68,7 +68,6 @@ conda-env/
 env/*.env
 
 # IDEs / editors
-.vscode/
 .idea/
 *.sublime-project
 *.sublime-workspace

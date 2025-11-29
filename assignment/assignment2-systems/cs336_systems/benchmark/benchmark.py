@@ -2,7 +2,7 @@ import timeit
 import torch
 import pandas as pd
 from statistics import mean, stdev
-# from cs336_basics.model import BasicsTransformerLM
+from cs336_basics.model import BasicsTransformerLM
 import argparse
 
 # Define model sizes
@@ -29,8 +29,47 @@ warmup_steps = 5
 timing_steps = 10
 device = "cuda" if torch.cuda.is_available() else "cpu"
 
-def benchmark():
+def benchmark(model, x, y, mode):
+    model.train()
+    optimizer = torch.optim.Adam(model.parameters(), lr=1e-3)
+    criterion = torch.nn.CrossEntropyLoss()
+
+    def step_forward():
+        with torch.no_grad():
+            _ = model(x)
+    
+    def step_forward_backward():
+        optimizer.zero_grad()
+        out = model(x)
+        loss = criterion(out.view(-1, vocab_size), y.view(-1))
+        loss.backward()
+        optimizer.step()
+    step_fn = step_forward if mode == "forward" else step_forward_backward
+
+    # Warm up
+    for _ in range(warmup_steps):
+        step_fn
+    
+    # Times steps
+    times = []
+    for _ in range(timing_steps):
+        start = timeit.default_timer()
+        step_fn()
+        torch.cuda.synchronize()
+        end = timeit.default_timer()
+        times.append(end - start)
+
+    return mean(times), stdev(times)
     
 def parse_args():
+    parser = argparse.ArgumentParser(description="Benchmark Transformer models")
+    parser.add_argument("--d_model", type=int, help="Model dimension")
+    parser.add_argument("--d_ff", type=int, help="Feedforward dimension")
+    parser.add_argument("--num_layers", type=int, help="Number of Transformer layers")
+    parser.add_argument("--num_heads", type=int, help="Number of attention heads")
+    parser.add_argument("--all", action="store_true", help="Run all predefined configurations")
+    parser.add_argument("--context_length", type=int, help="Sequence context length")
+    parser.add_argument("--warmup_steps", type=int, help="Number of warmup steps")
+    return parser.parse_args
 
 def main():
