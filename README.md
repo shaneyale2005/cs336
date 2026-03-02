@@ -1,16 +1,10 @@
-# 🧠 [CS336: Language Modeling from Scratch Spring 2025](https://stanford-cs336.github.io/spring2025/index.html)
+# [CS336: Language Modeling from Scratch Spring 2025](https://stanford-cs336.github.io/spring2025/index.html)
 
-### 👥 Course Staff
-
-- **Tatsunori Hashimoto** — Instructor  
-- **Percy Liang** — Instructor  
-- **Marcel Rød** — CA  
-- **Neil Band** — CA  
-- **Rohith Kuditipudi** — CA  
+This course provides a comprehensive, hands-on introduction to language modeling, guiding students through building language models from scratch. Topics include data collection, transformer architectures, model training, evaluation, and deployment. The course is implementation-heavy and requires strong Python and deep learning skills.
 
 ---
 
-### 📅 Logistics
+### Logistics
 
 - **Lectures:** Tuesday/Thursday 3:00–4:20pm, NVIDIA Auditorium
 - **Office Hours:**
@@ -23,23 +17,7 @@
 
 ---
 
-### 📖 Course Overview
-
-This course provides a comprehensive, hands-on introduction to language modeling, guiding students through building language models from scratch. Topics include data collection, transformer architectures, model training, evaluation, and deployment. The course is implementation-heavy and requires strong Python and deep learning skills.
-
----
-
-### ✅ Prerequisites
-
-- Proficiency in Python
-- Experience with deep learning (PyTorch) and systems optimization
-- College-level calculus and linear algebra
-- Basic probability and statistics
-- Prior coursework in machine learning (e.g., CS221, CS229, CS230, CS124, CS224N)
-
----
-
-### 📝 Coursework
+### Coursework
 
 1. **Basics:** Implement and train a standard Transformer language model.
 2. **Systems:** Profile, optimize, and distribute model training.
